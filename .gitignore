@@ -1,0 +1,12 @@
+# Node modules
+node_modules/
+
+# Serverless build folders
+.serverless/
+
+# Logs
+*.log
+
+# Mac / Windows
+.DS_Store
+Thumbs.db

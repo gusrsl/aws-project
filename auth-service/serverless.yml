@@ -1,0 +1,58 @@
+service: auth-service
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "*"
+  environment:
+    USERS_TABLE: ${param:usersTableName}
+    JWT_SECRET: ${param:jwtSecret}
+
+params:
+  default:
+    usersTableName: 'users-table-${sls:stage}'
+    jwtSecret: '50bd97c0cfe687c43f9fd38036def9f8fc3b5c6dd47de28fab656ed8d1a3fbc5'
+
+functions:
+  registerUser:
+    handler: src/auth.registerUser
+    events:
+      - http:
+          path: /auth/register
+          method: post
+  loginUser:
+    handler: src/auth.loginUser
+    events:
+      - http:
+          path: /auth/login
+          method: post
+
+plugins:
+  - serverless-offline
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${param:usersTableName}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH

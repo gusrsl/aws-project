@@ -1,0 +1,70 @@
+service: task-service
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "*"
+  environment:
+    TASKS_TABLE: ${param:tasksTableName}
+    JWT_SECRET: ${param:jwtSecret}
+
+params:
+  default:
+    tasksTableName: 'tasks-table-${sls:stage}'
+    jwtSecret: '50bd97c0cfe687c43f9fd38036def9f8fc3b5c6dd47de28fab656ed8d1a3fbc5'
+
+functions:
+  createTask:
+    handler: src/tasks.create
+    events:
+      - http:
+          path: /tasks
+          method: post
+  getTasks:
+    handler: src/tasks.getAll
+    events:
+      - http:
+          path: /tasks
+          method: get
+  updateTask:
+    handler: src/tasks.update
+    events:
+      - http:
+          path: /tasks/{taskId}
+          method: put
+  deleteTask:
+    handler: src/tasks.delete
+    events:
+      - http:
+          path: /tasks/{taskId}
+          method: delete
+
+plugins:
+  - serverless-offline
+
+resources:
+  Resources:
+    TasksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${param:tasksTableName}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: taskId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: taskId
+            KeyType: HASH
