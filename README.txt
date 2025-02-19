@@ -1,334 +1,327 @@
-===========================================
-SISTEMA DE MICROSERVICIOS (AUTH & TASKS)
-===========================================
+# Task Management System - Microservices Architecture
+![Project Banner](./images/banner.png)
 
-📋 TABLA DE CONTENIDOS
----------------------
-1. Inicialización del Proyecto
-2. Estructura del Proyecto
-3. Tecnologías Utilizadas
-4. Configuración
-5. Desarrollo Local
-6. API Endpoints
-7. Despliegue
-8. Base de Datos
-9. Seguridad
-10. Solución de Problemas
-11. Comandos Útiles
-12. Monitoreo
-13. Ciclo de Desarrollo
+<div align="center">
 
-1. 🚀 INICIALIZACIÓN DEL PROYECTO
---------------------------------
-a) Clonar el repositorio:
-   git clone <url-del-repositorio>
-   cd <nombre-del-proyecto>
+[![Node.js Version](https://img.shields.io/badge/node-v18%2B-brightgreen)](https://nodejs.org/)
+[![AWS](https://img.shields.io/badge/AWS-Serverless-orange)](https://aws.amazon.com/)
+[![Angular](https://img.shields.io/badge/Angular-Latest-red)](https://angular.io/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-b) Crear estructura de carpetas:
-   mkdir auth-service task-service
+</div>
+
+## 📑 Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+- [Services](#services)
+  - [Auth Service](#auth-service)
+  - [Task Service](#task-service)
+  - [Frontend](#frontend)
+- [API Documentation](#api-documentation)
+- [Database Schema](#database-schema)
+- [Security](#security)
+- [Deployment](#deployment)
+- [Monitoring](#monitoring)
+- [Development Workflow](#development-workflow)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+## 🌟 Overview
+
+A modern, scalable task management system built with a microservices architecture. The system consists of two backend services (Authentication and Task Management) and a responsive Angular frontend application.
+
+### 📱 User Interface Previews
+
+<div align="center">
+  <img src="./images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Login Screen" width="400"/>
+  <p><em>Login Interface - Modern and User-friendly Design</em></p>
+</div>
+
+<div align="center">
+  <img src="./images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Dashboard" width="400"/>
+  <p><em>Dashboard - Task Management Interface</em></p>
+</div>
+
+## ✨ Features
+
+- **User Authentication**
+  - Secure registration and login
+  - JWT-based authentication
+  - Password encryption
+  - Session management
+
+- **Task Management**
+  - Create, read, update, and delete tasks
+  - Task categorization
+  - Priority levels
+  - Due dates
+  - Progress tracking
+
+- **Frontend Application**
+  - Responsive design
+  - Modern UI/UX
+  - Real-time updates
+  - Cross-browser compatibility
+
+## 🏗 Architecture
+
+```mermaid
+graph TD
+    A[Frontend - Angular] --> B[API Gateway]
+    B --> C[Auth Service]
+    B --> D[Task Service]
+    C --> E[(DynamoDB - Users)]
+    D --> F[(DynamoDB - Tasks)]
+```
+
+## 🛠 Tech Stack
+
+### Backend
+- **Runtime**: Node.js (v18+)
+- **Framework**: Serverless Framework
+- **Database**: AWS DynamoDB
+- **Authentication**: JWT + bcryptjs
+- **Cloud Provider**: AWS Lambda & API Gateway
+
+### Frontend
+- **Framework**: Angular (Latest)
+- **UI Library**: Angular Material
+- **State Management**: NgRx
+- **Styling**: SCSS with CSS Custom Properties
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js v18 or higher
+- AWS CLI configured
+- Serverless Framework CLI
+- Angular CLI
+- Git
+
+### Installation
+
+1. **Clone the Repository**
+   ```bash
+   git clone <repository-url>
+   cd task-management-system
+   ```
+
+2. **Auth Service Setup**
+   ```bash
    cd auth-service
-   mkdir src
+   npm install
+   ```
+
+3. **Task Service Setup**
+   ```bash
    cd ../task-service
-   mkdir src
+   npm install
+   ```
 
-c) Inicializar proyectos Node.js:
-   # Auth Service
-   cd auth-service
-   npm init -y
-   npm install aws-sdk bcryptjs jsonwebtoken serverless-offline
+4. **Frontend Setup**
+   ```bash
+   cd ../task-manager-frontend
+   npm install
+   ```
 
-   # Task Service
-   cd ../task-service
-   npm init -y
-   npm install aws-sdk jsonwebtoken serverless-offline
+## ⚙️ Configuration
 
-d) Crear archivos principales:
-   touch auth-service/src/auth.js
-   touch auth-service/serverless.yml
-   touch task-service/src/tasks.js
-   touch task-service/serverless.yml
+### Environment Variables
 
-e) Configurar AWS:
-   aws configure
-   # Ingresar credenciales AWS:
-   # - AWS Access Key ID
-   # - AWS Secret Access Key
-   # - Default region (us-east-1)
-   # - Default output format (json)
+```env
+# Auth Service
+JWT_SECRET=your_jwt_secret
+USERS_TABLE=users_table_name
+CORS_ORIGIN=http://localhost:4200
 
-2. 📁 ESTRUCTURA DEL PROYECTO
-----------------------------
-/
-├── auth-service/
-│   ├── src/
-│   │   └── auth.js         # Lógica de autenticación
-│   ├── package.json
-│   └── serverless.yml      # Configuración del servicio de auth
-│
-└── task-service/
-    ├── src/
-    │   └── tasks.js        # Lógica de tareas
-    ├── package.json
-    └── serverless.yml      # Configuración del servicio de tareas
+# Task Service
+TASKS_TABLE=tasks_table_name
+JWT_SECRET=your_jwt_secret
+CORS_ORIGIN=http://localhost:4200
+```
 
-3. 🔧 TECNOLOGÍAS UTILIZADAS
----------------------------
-- Node.js (v18+)
-- Serverless Framework
-- AWS DynamoDB
-- JWT (JSON Web Tokens)
-- bcryptjs
-- AWS SDK
+## 🔌 Services
 
-4. ⚙️ CONFIGURACIÓN
-------------------
-Variables de Entorno:
-- JWT_SECRET: Clave para tokens
-- USERS_TABLE: Tabla de usuarios
-- TASKS_TABLE: Tabla de tareas
+### Auth Service (Port: 3000)
 
-Configuración AWS:
-- Región: us-east-1
-- Credenciales configuradas
-- Permisos IAM para DynamoDB
+#### Endpoints
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User authentication
+- `GET /auth/profile` - Get user profile
+- `PUT /auth/profile` - Update user profile
 
-5. 💻 DESARROLLO LOCAL
----------------------
-Iniciar servicios:
+### Task Service (Port: 3004)
 
-Auth Service (Puerto 3000):
-cd auth-service
-serverless offline start
+#### Endpoints
+- `GET /tasks` - List tasks
+- `POST /tasks` - Create task
+- `PUT /tasks/{id}` - Update task
+- `DELETE /tasks/{id}` - Delete task
+- `GET /tasks/{id}` - Get task details
 
-Task Service (Puerto 3004):
-cd task-service
-serverless offline start
+## 🎨 Frontend Design System
 
-6. 📡 API ENDPOINTS
------------------
-AUTH SERVICE (http://localhost:3000)
+### Color Palette
 
-Registro:
-POST /auth/register
-{
-    "email": "usuario@ejemplo.com",
-    "password": "contraseña123"
+```scss
+--primary: #4f46e5;    // Main brand color
+--secondary: #64748b;  // Supporting color
+--success: #22c55e;    // Success states
+--danger: #ef4444;     // Error states
+--warning: #f59e0b;    // Warning states
+--background: #f8fafc; // Page background
+--surface: #ffffff;    // Component background
+--text-primary: #1e293b;   // Main text
+--text-secondary: #64748b; // Secondary text
+```
+
+### Typography
+
+- **Headings**: Inter
+- **Body**: Roboto
+- **Code**: JetBrains Mono
+
+### Components
+
+- Custom buttons with hover effects
+- Form inputs with validation states
+- Cards with elevation
+- Modern navigation bar
+- Responsive data tables
+- Loading spinners
+- Toast notifications
+
+## 📊 Database Schema
+
+### Users Table
+```typescript
+interface User {
+  userId: string;      // Hash Key
+  email: string;       // GSI
+  password: string;    // Hashed
+  createdAt: string;
+  updatedAt: string;
+  profile?: {
+    name: string;
+    avatar: string;
+  };
 }
+```
 
-Login:
-POST /auth/login
-{
-    "email": "usuario@ejemplo.com",
-    "password": "contraseña123"
+### Tasks Table
+```typescript
+interface Task {
+  taskId: string;      // Hash Key
+  userId: string;      // GSI
+  title: string;
+  description: string;
+  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+```
 
-TASK SERVICE (http://localhost:3004)
+## 🔒 Security
 
-Crear Tarea:
-POST /tasks
-Authorization: Bearer <token>
-{
-    "title": "Nueva Tarea",
-    "description": "Descripción"
-}
+- JWT authentication with 24h expiration
+- Password hashing using bcrypt
+- CORS configuration
+- AWS IAM roles and policies
+- Input validation and sanitization
+- Rate limiting
+- XSS protection
 
-Obtener Tareas:
-GET /tasks
-Authorization: Bearer <token>
+## 📦 Deployment
 
-Actualizar Tarea:
-PUT /tasks/{taskId}
-Authorization: Bearer <token>
-{
-    "title": "Tarea Actualizada",
-    "description": "Nueva descripción",
-    "done": true
-}
+### Backend Services
 
-Eliminar Tarea:
-DELETE /tasks/{taskId}
-Authorization: Bearer <token>
-
-7. 📦 DESPLIEGUE
----------------
-Despliegue inicial:
+```bash
+# Deploy Auth Service
 cd auth-service
 serverless deploy
 
-cd task-service
+# Deploy Task Service
+cd ../task-service
 serverless deploy
+```
 
-Actualizar función específica:
-serverless deploy function -f nombreFuncion
+### Frontend
 
-8. 🗄️ BASE DE DATOS
-------------------
-Tabla Users:
-- userId (String) - Hash Key
-- email (String)
-- password (String) - Hashed
-- createdAt (String)
+```bash
+# Build for production
+ng build --configuration=production
 
-Tabla Tasks:
-- taskId (String) - Hash Key
-- userId (String)
-- title (String)
-- description (String)
-- done (Boolean)
-- createdAt (String)
+# Deploy to S3 (if using AWS hosting)
+aws s3 sync dist/task-manager-frontend s3://your-bucket-name
+```
 
-9. 🔒 SEGURIDAD
---------------
-- JWT con expiración 24h
-- Contraseñas hasheadas (bcrypt)
-- CORS configurado
-- Autenticación requerida
-- Validación de propietario de tareas
+## 🔍 Monitoring
 
-10. 🐛 SOLUCIÓN DE PROBLEMAS
---------------------------
-Error DynamoDB:
-- Verificar credenciales AWS
-- Confirmar región
-- Validar permisos IAM
+- AWS CloudWatch Logs
+- Custom metrics and alarms
+- Error tracking
+- Performance monitoring
+- User analytics
 
-Error Autenticación:
-- Verificar JWT_SECRET
-- Confirmar formato token
-- Validar expiración
+## 🔄 Development Workflow
 
-Error CORS:
-- Revisar configuración serverless.yml
-- Verificar headers
-- Confirmar origen permitido
+1. Create feature branch
+2. Develop and test locally
+3. Run linting and tests
+4. Create pull request
+5. Code review
+6. Merge and deploy
 
-11. 📝 COMANDOS ÚTILES
---------------------
-# Logs en tiempo real
-serverless logs -f nombreFuncion -t
+## 🐛 Troubleshooting
 
-# Eliminar servicios
-serverless remove
+Common issues and solutions:
 
-# Listar funciones
-serverless info
+1. **DynamoDB Connection Issues**
+   - Check AWS credentials
+   - Verify table names
+   - Confirm IAM permissions
 
-# Invocar función local
-serverless invoke local -f nombreFuncion
+2. **JWT Authentication Errors**
+   - Validate token format
+   - Check expiration
+   - Verify secret key
 
-12. 🔍 MONITOREO
---------------
-- CloudWatch Logs
-- Métricas DynamoDB
-- Tiempos API Gateway
-- Errores y excepciones
+3. **CORS Issues**
+   - Check allowed origins
+   - Verify HTTP methods
+   - Validate headers
 
-13. 🔄 CICLO DE DESARROLLO
-------------------------
-1. Desarrollo local (serverless offline)
-2. Pruebas (curl/Postman)
-3. Commit cambios
-4. Despliegue AWS
-5. Verificación producción
+## 🤝 Contributing
 
-===========================================
-NOTAS IMPORTANTES
-===========================================
-- Node.js v18+ requerido
-- Tablas DynamoDB autocreadas
-- JWT_SECRET debe ser igual en ambos servicios
-- Formato respuesta consistente
-- Backups recomendados de DynamoDB
-- Monitorear costos AWS
-- Mantener dependencias actualizadas
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-===========================================
-ACTUALIZACIONES Y MANTENIMIENTO
-===========================================
-1. Actualizar dependencias:
-   npm update
+## 📄 License
 
-2. Verificar seguridad:
-   npm audit
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-3. Backup periódico:
-   aws dynamodb create-backup
+---
 
-4. Monitoreo regular:
-   - Revisar CloudWatch
-   - Verificar métricas
-   - Analizar logs
-
-5. Pruebas después de actualizaciones:
-   - Probar endpoints
-   - Verificar autenticación
-   - Validar CORS
-
-===========================================
-FRONTEND (ANGULAR)
-===========================================
-
-📱 ESTRUCTURA FRONTEND
----------------------
-/task-manager-frontend
-├── src/
-│   ├── app/
-│   │   ├── components/
-│   │   │   ├── auth/
-│   │   │   │   ├── login/
-│   │   │   │   └── register/
-│   │   │   ├── tasks/
-│   │   │   │   ├── task-form/
-│   │   │   │   └── task-list/
-│   │   │   └── shared/
-│   │   │       └── navbar/
-│   │   ├── services/
-│   │   │   ├── auth.service.ts
-│   │   │   └── task.service.ts
-│   │   ├── interceptors/
-│   │   │   └── auth.interceptor.ts
-│   │   └── interfaces/
-│   │       ├── task.ts
-│   │       └── user.ts
-│   └── styles.scss
-
-🎨 DISEÑO Y ESTILOS
-------------------
-Sistema de Diseño:
-- Variables CSS personalizadas
-- Sistema de colores moderno
-- Sombras y elevaciones
-- Bordes redondeados
-- Animaciones y transiciones
-
-Paleta de Colores:
-- Primary: #4f46e5
-- Secondary: #64748b
-- Success: #22c55e
-- Danger: #ef4444
-- Warning: #f59e0b
-- Background: #f8fafc
-- Surface: #ffffff
-- Text Primary: #1e293b
-- Text Secondary: #64748b
-
-Animaciones:
-- fadeIn: Entrada suave
-- slideIn: Deslizamiento lateral
-- spin: Rotación para loading
-- hover: Efectos al pasar el mouse
-- transiciones: 0.2s ease-out
-
-===========================================
-SISTEMA DE MICROSERVICIOS (AUTH & TASKS)
-===========================================
-
-## 📱 Interfaces de Usuario
-
-### Login
-<img src="./images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Login Screen" width="600">
-
-### Dashboard
-<img src="./images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Dashboard" width="600">
+<div align="center">
+  <p>Built with ❤️ by Your Team</p>
+  <p>
+    <a href="https://github.com/yourusername">GitHub</a> •
+    <a href="https://your-demo-url.com">Live Demo</a> •
+    <a href="mailto:your@email.com">Contact</a>
+  </p>
+</div>
 
 
