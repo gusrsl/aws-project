@@ -326,9 +326,9 @@ SISTEMA DE MICROSERVICIOS (AUTH & TASKS)
 ## 📱 Interfaces de Usuario
 
 ### Login
-<img src="images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Login Screen" width="600">
+<img src="./images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Login Screen" width="600">
 
 ### Dashboard
-<img src="images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Dashboard" width="600">
+<img src="./images/Screenshot 2025-02-19 at 2.04.13 AM.png" alt="Dashboard" width="600">
 
 
