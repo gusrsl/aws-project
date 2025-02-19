@@ -73,9 +73,10 @@
           .btn-secondary {
             background-color: var(--secondary-color);
             color: white;
+            transition: opacity 0.2s ease;
   
             &:hover {
-              background-color: darken(var(--secondary-color), 5%);
+              opacity: 0.9;
             }
           }
         }
