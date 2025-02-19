@@ -1,0 +1,84 @@
+.task-form-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    animation: fadeIn 0.3s ease-out;
+  
+    .task-form-card {
+      width: 100%;
+      max-width: 600px;
+  
+      .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+  
+        h2 {
+          font-size: 1.5rem;
+          color: var(--text-primary);
+          margin-bottom: 0.5rem;
+        }
+  
+        .subtitle {
+          color: var(--text-secondary);
+        }
+      }
+  
+      .task-form {
+        .input-group {
+          position: relative;
+  
+          i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+          }
+  
+          input, textarea {
+            padding-left: 2.5rem;
+            width: 100%;
+            
+            &:focus + i {
+              color: var(--primary-color);
+            }
+          }
+  
+          textarea {
+            padding-top: 0.75rem;
+            
+            & + i {
+              top: 1.25rem;
+            }
+          }
+        }
+  
+        .form-actions {
+          display: flex;
+          gap: 1rem;
+          margin-top: 2rem;
+  
+          button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+  
+            i {
+              font-size: 0.875rem;
+            }
+          }
+  
+          .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+  
+            &:hover {
+              background-color: darken(var(--secondary-color), 5%);
+            }
+          }
+        }
+      }
+    }
+  }

@@ -265,11 +265,60 @@ ACTUALIZACIONES Y MANTENIMIENTO
    - Validar CORS
 
 ===========================================
-CONTACTO Y SOPORTE
+FRONTEND (ANGULAR)
 ===========================================
-Para soporte o consultas:
-- GitHub: <url-repositorio>
-- Email: <email-soporte>
-- Documentación: <url-documentación>
 
-Última actualización: [FECHA]
+📱 ESTRUCTURA FRONTEND
+---------------------
+/task-manager-frontend
+├── src/
+│   ├── app/
+│   │   ├── components/
+│   │   │   ├── auth/
+│   │   │   │   ├── login/
+│   │   │   │   └── register/
+│   │   │   ├── tasks/
+│   │   │   │   ├── task-form/
+│   │   │   │   └── task-list/
+│   │   │   └── shared/
+│   │   │       └── navbar/
+│   │   ├── services/
+│   │   │   ├── auth.service.ts
+│   │   │   └── task.service.ts
+│   │   ├── interceptors/
+│   │   │   └── auth.interceptor.ts
+│   │   └── interfaces/
+│   │       ├── task.ts
+│   │       └── user.ts
+│   └── styles.scss
+
+🎨 DISEÑO Y ESTILOS
+------------------
+Sistema de Diseño:
+- Variables CSS personalizadas
+- Sistema de colores moderno
+- Sombras y elevaciones
+- Bordes redondeados
+- Animaciones y transiciones
+
+Paleta de Colores:
+- Primary: #4f46e5
+- Secondary: #64748b
+- Success: #22c55e
+- Danger: #ef4444
+- Warning: #f59e0b
+- Background: #f8fafc
+- Surface: #ffffff
+- Text Primary: #1e293b
+- Text Secondary: #64748b
+
+Animaciones:
+- fadeIn: Entrada suave
+- slideIn: Deslizamiento lateral
+- spin: Rotación para loading
+- hover: Efectos al pasar el mouse
+- transiciones: 0.2s ease-out
+
+🔧 CONFIGURACIÓN FRONTEND
+-----------------------
+1. Instalar dependencias:
