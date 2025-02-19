@@ -1,5 +1,6 @@
 service: task-service
 frameworkVersion: '4'
+# Eliminamos configuraciones de Dashboard para ejecución en local
 
 provider:
   name: aws
@@ -33,24 +34,34 @@ functions:
       - http:
           path: /tasks
           method: post
+          cors: true
   getTasks:
     handler: src/tasks.getAll
     events:
       - http:
           path: /tasks
           method: get
+          cors: true
   updateTask:
     handler: src/tasks.update
     events:
       - http:
           path: /tasks/{taskId}
           method: put
+          cors: true
   deleteTask:
     handler: src/tasks.delete
     events:
       - http:
           path: /tasks/{taskId}
           method: delete
+          cors: true
+
+custom:
+  serverless-offline:
+    httpPort: 3004
+    lambdaPort: 3005
+    noPrependStageInUrl: true
 
 plugins:
   - serverless-offline

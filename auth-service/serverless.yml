@@ -31,14 +31,40 @@ functions:
     handler: src/auth.registerUser
     events:
       - http:
-          path: /auth/register
+          path: auth/register
           method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
   loginUser:
     handler: src/auth.loginUser
     events:
       - http:
-          path: /auth/login
+          path: auth/login
           method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+    lambdaPort: 3002
+    noPrependStageInUrl: true
 
 plugins:
   - serverless-offline
