@@ -424,45 +424,21 @@ endpoints:
 
 1. **Register a New User:**
 ```bash
-curl -X POST https://[YOUR_AUTH_API]/dev/auth/register \
+curl -X POST https://ccemnbnre1.execute-api.us-east-1.amazonaws.com/dev/auth/register \
 -H "Content-Type: application/json" \
 -d '{"email": "test@example.com", "password": "Test1234!", "name": "Test User"}'
-```
-Expected response:
-```json
-{
-  "message": "Usuario registrado con éxito",
-  "userId": "1234567890",
-  "email": "test@example.com"
-}
 ```
 
 2. **Login User:**
 ```bash
-curl -X POST https://[YOUR_AUTH_API]/dev/auth/login \
+curl -X POST https://ccemnbnre1.execute-api.us-east-1.amazonaws.com/dev/auth/login \
 -H "Content-Type: application/json" \
 -d '{"email": "test@example.com", "password": "Test1234!"}'
-```
-Expected response:
-```json
-{
-  "token": "eyJhbG...", // JWT token
-  "cognitoTokens": {
-    "accessToken": "eyJraW...",
-    "idToken": "eyJraW...",
-    "refreshToken": "eyJjdH..."
-  },
-  "user": {
-    "userId": "1234567890",
-    "email": "test@example.com",
-    "name": "Test User"
-  }
-}
 ```
 
 3. **Store Token for Task Service:**
 ```bash
-TOKEN=$(curl -s -X POST https://[YOUR_AUTH_API]/dev/auth/login \
+TOKEN=$(curl -s -X POST https://ccemnbnre1.execute-api.us-east-1.amazonaws.com/dev/auth/login \
 -H "Content-Type: application/json" \
 -d '{"email": "test@example.com", "password": "Test1234!"}' | jq -r .token)
 ```
@@ -471,71 +447,30 @@ TOKEN=$(curl -s -X POST https://[YOUR_AUTH_API]/dev/auth/login \
 
 1. **Create a New Task:**
 ```bash
-curl -X POST https://[YOUR_TASK_API]/dev/tasks \
+curl -X POST https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev/tasks \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $TOKEN" \
 -d '{"title": "Mi primera tarea", "description": "Esta es una tarea de prueba"}'
 ```
-Expected response:
-```json
-{
-  "taskId": "1234567890",
-  "userId": "1234567890",
-  "title": "Mi primera tarea",
-  "description": "Esta es una tarea de prueba",
-  "done": false,
-  "createdAt": "2025-02-20T05:34:52.237Z"
-}
-```
 
 2. **Get All Tasks:**
 ```bash
-curl -X GET https://[YOUR_TASK_API]/dev/tasks \
+curl -X GET https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev/tasks \
 -H "Authorization: Bearer $TOKEN"
-```
-Expected response:
-```json
-[
-  {
-    "taskId": "1234567890",
-    "userId": "1234567890",
-    "title": "Mi primera tarea",
-    "description": "Esta es una tarea de prueba",
-    "done": false,
-    "createdAt": "2025-02-20T05:34:52.237Z"
-  }
-]
 ```
 
 3. **Update a Task:**
 ```bash
-curl -X PUT https://[YOUR_TASK_API]/dev/tasks/[TASK_ID] \
+curl -X PUT https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev/tasks/{taskId} \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer $TOKEN" \
 -d '{"done": true, "title": "Mi primera tarea (completada)"}'
 ```
-Expected response:
-```json
-{
-  "taskId": "1234567890",
-  "userId": "1234567890",
-  "title": "Mi primera tarea (completada)",
-  "description": "Esta es una tarea de prueba",
-  "done": true,
-  "createdAt": "2025-02-20T05:34:52.237Z"
-}
-```
 
 4. **Delete a Task:**
 ```bash
-curl -X DELETE https://[YOUR_TASK_API]/dev/tasks/[TASK_ID] \
+curl -X DELETE https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev/tasks/{taskId} \
 -H "Authorization: Bearer $TOKEN"
-```
-Expected response:
-```json
-{
-  "message": "Task deleted"
-}
 ```
 
 ### Important Notes
@@ -827,9 +762,9 @@ npm test
 ### Environment Variables
 
 ```env
-REACT_APP_AUTH_API=https://[YOUR_AUTH_API]/dev
-REACT_APP_TASK_API=https://[YOUR_TASK_API]/dev
-REACT_APP_STAGE=development
+VITE_AUTH_API=https://ccemnbnre1.execute-api.us-east-1.amazonaws.com/dev
+VITE_TASK_API=https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev
+VITE_STAGE=development
 ```
 
 ### Best Practices
