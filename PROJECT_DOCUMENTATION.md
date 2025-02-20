@@ -9,10 +9,12 @@
 4. [Service Configurations](#service-configurations)
    - [Auth Service](#auth-service)
    - [Task Service](#task-service)
-5. [Lambda Endpoints Guide](#lambda-endpoints-guide)
-6. [Testing Guide](#testing-guide)
-7. [Frontend Documentation](#frontend-documentation)
-8. [Conclusion](#conclusion)
+5. [Microservices Commands and Operations](#microservices-commands-and-operations)
+6. [Lambda Endpoints Guide](#lambda-endpoints-guide)
+7. [Testing Guide](#testing-guide)
+8. [Frontend Documentation](#frontend-documentation)
+9. [Frontend Deployment Guide](#frontend-deployment-guide)
+10. [Conclusion](#conclusion)
 
 ## Project Overview
 
@@ -108,6 +110,254 @@ functions:
       - http:
           path: /tasks/{taskId}
           method: delete
+```
+
+## Microservices Commands and Operations
+
+This section provides a comprehensive guide to the commands used for managing and operating the microservices architecture.
+
+### Initial Setup and Configuration
+
+1. **Install Serverless Framework Globally:**
+```bash
+npm install -g serverless
+```
+This command installs the Serverless Framework CLI tool globally on your system, enabling you to create and manage serverless applications.
+
+2. **Configure AWS Credentials:**
+```bash
+aws configure
+```
+Sets up your AWS credentials for deployment. You'll need to provide:
+- AWS Access Key ID
+- AWS Secret Access Key
+- Default region (e.g., us-east-1)
+- Default output format (json)
+
+### Service Creation and Structure
+
+1. **Create a New Service:**
+```bash
+# Create Auth Service
+serverless create --template aws-nodejs-typescript --path auth-service
+
+# Create Task Service
+serverless create --template aws-nodejs-typescript --path task-service
+```
+These commands create new serverless services with TypeScript template, including:
+- Basic project structure
+- TypeScript configuration
+- Webpack configuration
+- Basic handler function
+
+2. **Install Dependencies:**
+```bash
+# For each service (auth-service and task-service)
+cd service-name
+npm install
+```
+
+### Development Commands
+
+1. **Local Development:**
+```bash
+# Start offline mode for local testing
+serverless offline start
+
+# With specific stage
+serverless offline start --stage dev
+```
+Enables local testing of Lambda functions and API endpoints without deploying to AWS.
+
+2. **TypeScript Compilation:**
+```bash
+# Watch mode for development
+npm run watch
+
+# Build for production
+npm run build
+```
+
+### Deployment Commands
+
+1. **Deploy Individual Services:**
+```bash
+# Deploy with specific stage
+serverless deploy --stage dev
+serverless deploy --stage prod
+
+# Deploy a single function
+serverless deploy function -f functionName
+```
+The deploy command:
+- Packages your service
+- Uploads to AWS S3
+- Updates Lambda functions
+- Configures API Gateway
+
+2. **Remove Deployed Service:**
+```bash
+# Remove all resources
+serverless remove --stage dev
+
+# Remove specific stage
+serverless remove --stage prod
+```
+Removes all AWS resources associated with your service.
+
+### Monitoring and Logging
+
+1. **View Service Information:**
+```bash
+# Get service info
+serverless info
+
+# Get info for specific stage
+serverless info --stage prod
+```
+Displays information about:
+- Service endpoints
+- Functions
+- Stack Outputs
+- API Gateway endpoints
+
+2. **View Function Logs:**
+```bash
+# View logs for specific function
+serverless logs -f functionName
+
+# Tail logs in real-time
+serverless logs -f functionName -t
+
+# Filter logs by time
+serverless logs -f functionName --startTime 5h
+```
+Retrieves CloudWatch logs for specified Lambda functions.
+
+### Testing Commands
+
+1. **Unit Testing:**
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+2. **Integration Testing:**
+```bash
+# Run integration tests
+npm run test:integration
+
+# Run specific test file
+npm test -- path/to/test-file.test.ts
+```
+
+### Environment Management
+
+1. **Set Environment Variables:**
+```bash
+# Set variables for stage
+serverless config credentials --provider aws --key KEY --secret SECRET
+
+# Using AWS Parameter Store
+aws ssm put-parameter --name "/service/dev/parameter" --value "value" --type SecureString
+```
+
+2. **View Environment Variables:**
+```bash
+# List all parameters
+aws ssm describe-parameters
+
+# Get specific parameter
+aws ssm get-parameter --name "/service/dev/parameter" --with-decryption
+```
+
+### Troubleshooting Commands
+
+1. **Stack Validation:**
+```bash
+# Validate serverless.yml
+serverless print
+
+# Validate specific stage
+serverless print --stage prod
+```
+Validates and prints the final resolved configuration.
+
+2. **CloudFormation Stack Status:**
+```bash
+# View stack events
+aws cloudformation describe-stack-events --stack-name service-name-dev
+
+# View stack resources
+aws cloudformation list-stack-resources --stack-name service-name-dev
+```
+
+### Performance and Optimization
+
+1. **Package Analysis:**
+```bash
+# Analyze bundle size
+npm run analyze
+
+# Check for dependency vulnerabilities
+npm audit
+```
+
+2. **Cold Start Optimization:**
+```bash
+# Keep functions warm
+serverless invoke --function functionName --data '{"warmup": true}'
+```
+
+### Best Practices for Commands
+
+1. **Version Control:**
+- Always specify stages explicitly
+- Use meaningful function names
+- Document custom scripts in package.json
+
+2. **Security:**
+- Never commit sensitive environment variables
+- Use AWS Parameter Store for secrets
+- Rotate access keys regularly
+
+3. **Deployment:**
+- Test in dev/staging before prod
+- Use canary deployments for critical updates
+- Maintain deployment documentation
+
+4. **Monitoring:**
+- Set up CloudWatch alarms
+- Monitor function metrics
+- Track API Gateway usage
+
+### Common Issues and Solutions
+
+1. **Deployment Failures:**
+```bash
+# Clean .serverless directory
+rm -rf .serverless
+
+# Force deployment
+serverless deploy --force
+```
+
+2. **Permission Issues:**
+```bash
+# Verify IAM roles
+aws iam get-role --role-name service-name-dev-role
+
+# Update role policies
+aws iam update-role --role-name service-name-dev-role --policy-document file://policy.json
+```
+
+3. **API Gateway Issues:**
+```bash
+# Clear API Gateway cache
+aws apigateway flush-stage-cache --rest-api-id API_ID --stage-name dev
 ```
 
 ## Lambda Endpoints Guide
@@ -295,6 +545,142 @@ Expected response:
 3. The JWT token is valid for 1 hour. After expiration, you'll need to login again to get a new token.
 4. All task operations require a valid JWT token in the Authorization header.
 5. The task service validates token ownership - users can only manage their own tasks.
+
+## Frontend Deployment Guide
+
+### Overview
+The frontend application is deployed using AWS S3 for static hosting and configured with proper CORS settings to interact with the backend services. This section details the deployment process and configuration steps.
+
+### Prerequisites
+- AWS CLI installed and configured with appropriate credentials
+- Node.js and npm installed
+- Frontend application built and ready for deployment
+
+### Build Process
+1. **Build the Application:**
+```bash
+cd frontend
+npm run build
+```
+This command creates a `dist/` directory containing the optimized production build.
+
+### AWS S3 Configuration
+
+1. **Create and Configure S3 Bucket:**
+```bash
+# Create a new bucket
+aws s3 mb s3://task-manager-frontend-grm
+
+# Configure bucket for static website hosting
+aws s3 website s3://task-manager-frontend-grm --index-document index.html --error-document index.html
+```
+
+2. **Configure Bucket Policy:**
+Create a `bucket-policy.json` file:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::task-manager-frontend-grm/*"
+        }
+    ]
+}
+```
+
+Apply the policy:
+```bash
+aws s3api put-bucket-policy --bucket task-manager-frontend-grm --policy file://bucket-policy.json
+```
+
+3. **Configure CORS:**
+Create a `cors.json` file:
+```json
+{
+    "CORSRules": [
+        {
+            "AllowedHeaders": ["*"],
+            "AllowedMethods": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+            "AllowedOrigins": ["*"],
+            "ExposeHeaders": []
+        }
+    ]
+}
+```
+
+Apply CORS configuration:
+```bash
+aws s3api put-bucket-cors --bucket task-manager-frontend-grm --cors-configuration file://cors.json
+```
+
+### Deployment Steps
+
+1. **Deploy to S3:**
+```bash
+aws s3 sync dist/ s3://task-manager-frontend-grm --delete
+```
+This command synchronizes the contents of the `dist/` directory with the S3 bucket, removing any files that no longer exist in the source.
+
+2. **Verify Deployment:**
+Access the application at:
+```
+http://task-manager-frontend-grm.s3-website-us-east-1.amazonaws.com
+```
+
+### Environment Configuration
+The frontend application uses environment variables for API endpoints. These are configured in `.env.production`:
+
+```env
+VITE_AUTH_API=https://ccemnbnre1.execute-api.us-east-1.amazonaws.com/dev
+VITE_TASK_API=https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev
+```
+
+### Maintenance and Updates
+
+To update the deployed application:
+
+1. Make changes to the codebase
+2. Build the application: `npm run build`
+3. Sync with S3: `aws s3 sync dist/ s3://task-manager-frontend-grm --delete`
+
+### Troubleshooting
+
+Common issues and solutions:
+
+1. **CORS Errors:**
+   - Verify CORS configuration in S3 bucket
+   - Check API Gateway CORS settings
+   - Ensure environment variables are correct
+
+2. **404 Errors:**
+   - Confirm index.html is set as both index and error document
+   - Verify bucket policy allows public access
+   - Check if files were uploaded correctly
+
+3. **API Connection Issues:**
+   - Validate environment variables
+   - Ensure API Gateway endpoints are correct
+   - Check network requests in browser developer tools
+
+### Security Considerations
+
+1. **Access Control:**
+   - S3 bucket is public but only allows read access
+   - API endpoints are protected with JWT authentication
+   - Environment variables are properly configured
+
+2. **HTTPS:**
+   - Consider using CloudFront with SSL/TLS for secure access
+   - Ensure API endpoints use HTTPS
+
+3. **Best Practices:**
+   - Regular security audits
+   - Monitor AWS CloudWatch logs
+   - Keep dependencies updated
 
 ## Frontend Documentation
 
