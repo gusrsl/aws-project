@@ -14,7 +14,8 @@
 7. [Testing Guide](#testing-guide)
 8. [Frontend Documentation](#frontend-documentation)
 9. [Frontend Deployment Guide](#frontend-deployment-guide)
-10. [Conclusion](#conclusion)
+10. [AWS Free Tier Considerations](#aws-free-tier-considerations)
+11. [Conclusion](#conclusion)
 
 ## Project Overview
 
@@ -483,6 +484,8 @@ curl -X DELETE https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev/tasks/
 
 ## Frontend Deployment Guide
 
+http://task-manager-frontend-grm.s3-website-us-east-1.amazonaws.com/login
+
 ### Overview
 The frontend application is deployed using AWS S3 for static hosting and configured with proper CORS settings to interact with the backend services. This section details the deployment process and configuration steps.
 
@@ -798,6 +801,168 @@ VITE_STAGE=development
    - React Error Boundary implementation
    - Console error tracking
    - User interaction analytics
+
+## AWS Free Tier Considerations
+
+### Overview
+Este proyecto está diseñado para mantenerse dentro de los límites de la capa gratuita de AWS. A continuación se detallan los límites y recomendaciones para cada servicio utilizado.
+
+### Límites de Servicios
+
+1. **AWS Lambda:**
+   - 1 millón de solicitudes gratuitas por mes
+   - 400,000 GB-segundos de tiempo de computación por mes
+   - Recomendaciones:
+     - Mantener las funciones Lambda optimizadas (máximo 128MB de memoria)
+     - Evitar loops infinitos o código ineficiente
+     - Monitorear la duración de las ejecuciones
+
+2. **API Gateway:**
+   - 1 millón de llamadas API por mes
+   - Recomendaciones:
+     - Implementar caché cuando sea posible
+     - Evitar llamadas innecesarias
+     - Usar throttling para prevenir uso excesivo
+
+3. **DynamoDB:**
+   - 25GB de almacenamiento
+   - 25 unidades de capacidad de escritura y lectura
+   - Recomendaciones:
+     - Implementar TTL para datos temporales
+     - Limpiar registros antiguos no utilizados
+     - Usar queries eficientes
+
+4. **S3:**
+   - 5GB de almacenamiento estándar
+   - 20,000 solicitudes GET
+   - 2,000 solicitudes PUT
+   - Recomendaciones:
+     - Mantener solo archivos necesarios
+     - Implementar lifecycle policies
+     - Comprimir assets estáticos
+
+### Monitoreo y Alertas
+
+1. **Configurar Alertas de Facturación:**
+```bash
+# Crear alerta de facturación en CloudWatch
+aws cloudwatch put-metric-alarm \
+    --alarm-name billing-alarm \
+    --alarm-description "Alerta cuando los gastos superan $5" \
+    --metric-name EstimatedCharges \
+    --namespace AWS/Billing \
+    --statistic Maximum \
+    --period 21600 \
+    --threshold 5 \
+    --comparison-operator GreaterThanThreshold \
+    --evaluation-periods 1 \
+    --alarm-actions <tu-arn-de-sns>
+```
+
+2. **Revisar Uso Regular:**
+```bash
+# Verificar métricas de Lambda
+aws cloudwatch get-metric-statistics \
+    --namespace AWS/Lambda \
+    --metric-name Invocations \
+    --dimensions Name=FunctionName,Value=<nombre-funcion> \
+    --start-time $(date -v-1d +%Y-%m-%dT%H:%M:%S) \
+    --end-time $(date +%Y-%m-%dT%H:%M:%S) \
+    --period 3600 \
+    --statistics Sum
+```
+
+### Prácticas Recomendadas
+
+1. **Limpieza Regular:**
+   - Eliminar recursos no utilizados
+   - Revisar y limpiar logs antiguos
+   - Mantener solo los datos necesarios
+
+2. **Optimización de Costos:**
+   - Usar la memoria mínima necesaria en Lambda
+   - Implementar caching donde sea posible
+   - Minimizar el almacenamiento en S3 y DynamoDB
+
+3. **Monitoreo Proactivo:**
+   - Configurar alertas de uso
+   - Revisar el dashboard de facturación semanalmente
+   - Mantener logs de uso de recursos
+
+### Comandos de Monitoreo
+
+1. **Verificar Uso de Lambda:**
+```bash
+# Ver métricas de una función específica
+aws lambda get-function-configuration --function-name <nombre-funcion>
+
+# Ver logs recientes
+aws logs get-log-events --log-group-name /aws/lambda/<nombre-funcion> --limit 10
+```
+
+2. **Verificar Tamaño de DynamoDB:**
+```bash
+# Ver estadísticas de tabla
+aws dynamodb describe-table --table-name <nombre-tabla>
+
+# Ver consumo de capacidad
+aws dynamodb describe-table --table-name <nombre-tabla> --query "Table.ProvisionedThroughput"
+```
+
+3. **Verificar Uso de S3:**
+```bash
+# Ver tamaño del bucket
+aws s3api list-objects --bucket task-manager-frontend-grm --output json --query "[sum(Contents[].Size)]"
+```
+
+### Acciones Preventivas
+
+1. **Establecer Presupuestos:**
+```bash
+# Crear un presupuesto mensual
+aws budgets create-budget \
+    --account-id <tu-id-cuenta> \
+    --budget file://budget.json \
+    --notifications-with-subscribers file://notifications.json
+```
+
+2. **Configurar Límites:**
+```bash
+# Configurar límites de concurrencia en Lambda
+aws lambda put-function-concurrency \
+    --function-name <nombre-funcion> \
+    --reserved-concurrent-executions 10
+```
+
+### Pasos para Desactivar Servicios
+
+Si necesitas detener temporalmente el proyecto:
+
+1. **Desactivar APIs:**
+```bash
+# Desactivar API Gateway stage
+aws apigateway update-stage \
+    --rest-api-id <api-id> \
+    --stage-name dev \
+    --patch-operations op=replace,path=/deploymentId,value=''
+```
+
+2. **Pausar Funciones Lambda:**
+```bash
+# Establecer concurrencia a 0
+aws lambda put-function-concurrency \
+    --function-name <nombre-funcion> \
+    --reserved-concurrent-executions 0
+```
+
+3. **Limpiar Datos:**
+```bash
+# Vaciar bucket S3
+aws s3 rm s3://task-manager-frontend-grm --recursive
+
+# Eliminar registros de DynamoDB (opcional)
+aws dynamodb delete-table --table-name <nombre-tabla>
+```
 
 ## Conclusion
 
