@@ -10,6 +10,7 @@ provider:
       statements:
         - Effect: Allow
           Action:
+            - cognito-idp:*
             - dynamodb:Query
             - dynamodb:Scan
             - dynamodb:GetItem
@@ -20,6 +21,8 @@ provider:
   environment:
     USERS_TABLE: ${param:usersTableName}
     JWT_SECRET: ${param:jwtSecret}
+    USER_POOL_ID: !Ref CognitoUserPool
+    USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
 
 params:
   default:
@@ -71,6 +74,43 @@ plugins:
 
 resources:
   Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-user-pool-${sls:stage}
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            RequireUppercase: true
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+          - Name: name
+            AttributeDataType: String
+            Mutable: true
+            Required: false
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:service}-user-pool-client-${sls:stage}
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        GenerateSecret: false
+        PreventUserExistenceErrors: ENABLED
+        
     UsersTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -79,6 +119,21 @@ resources:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
+          - AttributeName: email
+            AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: email-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+  Outputs:
+    UserPoolId:
+      Value: !Ref CognitoUserPool
+    UserPoolClientId:
+      Value: !Ref CognitoUserPoolClient
