@@ -8,7 +8,6 @@ import {
   Zoom,
   Paper,
   Stack,
-  useMediaQuery,
   Container,
   Divider,
 } from '@mui/material';
@@ -17,20 +16,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import { taskService } from '../../services/tasks.service';
 import { setTasks, deleteTask as deleteTaskAction } from '../../store/tasks/tasksSlice';
-import { showSnackbar } from '../../store/ui/uiSlice';
 import { TaskCard } from './components/TaskCard';
 import { TaskDialog } from './components/TaskDialog';
 import { TaskFilters } from './components/TaskFilters';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { AlertMessage } from '../../components/common/AlertMessage';
+import { useAlert } from '../../hooks/useAlert';
+import { CONTAINER } from '../../theme/constants';
 
 const TasksPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useAppDispatch();
   const { tasks, filter, sortBy, sortOrder } = useAppSelector((state) => state.tasks);
   const [isLoading, setIsLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const { alert, showError, showSuccess, hideAlert } = useAlert();
 
   useEffect(() => {
     loadTasks();
@@ -41,10 +41,7 @@ const TasksPage = () => {
       const tasksData = await taskService.getAllTasks();
       dispatch(setTasks(tasksData));
     } catch (error) {
-      dispatch(showSnackbar({
-        message: 'Error al cargar las tareas',
-        severity: 'error',
-      }));
+      showError('Error al cargar las tareas', 'Error');
     } finally {
       setIsLoading(false);
     }
@@ -54,17 +51,10 @@ const TasksPage = () => {
     try {
       await taskService.deleteTask(taskId);
       dispatch(deleteTaskAction(taskId));
-      dispatch(showSnackbar({
-        message: 'Tarea eliminada correctamente',
-        severity: 'success',
-      }));
+      showSuccess('Tarea eliminada correctamente');
     } catch (error) {
-      dispatch(showSnackbar({
-        message: 'Error al eliminar la tarea',
-        severity: 'error',
-      }));
-      // Recargar las tareas en caso de error para asegurar sincronización
-      loadTasks();
+      showError('Error al eliminar la tarea');
+      loadTasks(); // Recargar las tareas en caso de error
     }
   };
 
@@ -88,37 +78,38 @@ const TasksPage = () => {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <Box
-      component="main"
-      sx={{
-        flexGrow: 1,
-        minHeight: '100%',
-        backgroundColor: theme.palette.mode === 'dark'
-          ? theme.palette.background.default
-          : theme.palette.grey[100],
-        pt: { xs: 2, sm: 3, md: 4 },
-        pb: { xs: 8, sm: 10, md: 12 }, // Espacio extra para el FAB
-      }}
-    >
-      <Container 
-        maxWidth="xl"
-        sx={{ 
-          height: '100%',
-          maxWidth: { xs: '100%', sm: '95%', md: '90%', lg: '1400px' },
+    <>
+      {alert.open && (
+        <AlertMessage
+          message={alert.message}
+          title={alert.title}
+          severity={alert.severity}
+          onClose={hideAlert}
+        />
+      )}
+
+      <Container
+        maxWidth={false}
+        sx={{
+          maxWidth: {
+            sm: CONTAINER.sm,
+            md: CONTAINER.md,
+            lg: CONTAINER.lg,
+          },
           mx: 'auto',
           px: { xs: 2, sm: 3, md: 4 },
+          py: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        <Stack 
-          spacing={{ xs: 2, sm: 3, md: 4 }}
-          sx={{ height: '100%' }}
-        >
+        <Stack spacing={{ xs: 2, sm: 3, md: 4 }}>
           <Paper
             elevation={0}
             sx={{
               p: { xs: 2, sm: 3 },
               borderRadius: 2,
               backgroundColor: theme.palette.background.paper,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${theme.palette.divider}`,
             }}
           >
             <Stack spacing={2}>
@@ -137,7 +128,7 @@ const TasksPage = () => {
                 Mis Tareas
               </Typography>
               
-              <Divider sx={{ my: { xs: 1, sm: 2 } }} />
+              <Divider />
               
               <TaskFilters />
             </Stack>
@@ -149,10 +140,9 @@ const TasksPage = () => {
               p: { xs: 2, sm: 3 },
               borderRadius: 2,
               backgroundColor: theme.palette.background.paper,
-              minHeight: `calc(100vh - ${isMobile ? '380px' : '420px'})`,
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${theme.palette.divider}`,
+              minHeight: 'calc(100vh - 380px)',
             }}
           >
             <Grid
@@ -162,19 +152,14 @@ const TasksPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              sx={{
-                width: '100%',
-                margin: 0,
-                flexGrow: 1,
-              }}
             >
               <AnimatePresence mode="popLayout">
                 {filteredAndSortedTasks.map((task) => (
                   <Grid
                     item
                     xs={12}
-                    sm={isTablet ? 12 : 6}
-                    md={4}
+                    sm={12}
+                    md={6}
                     lg={4}
                     xl={3}
                     key={task.taskId}
@@ -187,10 +172,6 @@ const TasksPage = () => {
                       type: 'spring',
                       stiffness: 300,
                       damping: 25,
-                    }}
-                    sx={{
-                      padding: { xs: 1, sm: 1.5, md: 2 },
-                      height: 'fit-content',
                     }}
                   >
                     <TaskCard 
@@ -246,30 +227,33 @@ const TasksPage = () => {
             </Grid>
           </Paper>
         </Stack>
-
-        <Zoom in={true} style={{ transitionDelay: '500ms' }}>
-          <Fab
-            color="primary"
-            aria-label="add"
-            onClick={handleOpenDialog}
-            sx={{
-              position: 'fixed',
-              bottom: { xs: 16, sm: 24, md: 32 },
-              right: { xs: 16, sm: 24, md: 32 },
-              boxShadow: theme.shadows[4],
-            }}
-          >
-            <AddIcon />
-          </Fab>
-        </Zoom>
-
-        <TaskDialog
-          open={openDialog}
-          onClose={handleCloseDialog}
-          onSuccess={loadTasks}
-        />
       </Container>
-    </Box>
+
+      <Zoom in={true} style={{ transitionDelay: '500ms' }}>
+        <Fab
+          color="primary"
+          aria-label="add"
+          onClick={handleOpenDialog}
+          sx={{
+            position: 'fixed',
+            bottom: { xs: 16, sm: 24, md: 32 },
+            right: { xs: 16, sm: 24, md: 32 },
+            boxShadow: theme.shadows[4],
+          }}
+        >
+          <AddIcon />
+        </Fab>
+      </Zoom>
+
+      <TaskDialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        onSuccess={() => {
+          loadTasks();
+          showSuccess('Tarea creada correctamente');
+        }}
+      />
+    </>
   );
 };
 

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { useAppSelector } from '../../store/store';
 import { NavMenu } from './NavMenu';
+import { CONTAINER, HEIGHTS } from '../../theme/constants';
 
 export const Layout = () => {
   const theme = useTheme();
@@ -19,6 +20,7 @@ export const Layout = () => {
         display: 'flex', 
         flexDirection: 'column', 
         minHeight: '100vh',
+        width: '100%',
         backgroundColor: theme.palette.mode === 'dark'
           ? theme.palette.background.default
           : theme.palette.grey[50],
@@ -33,19 +35,35 @@ export const Layout = () => {
         elevation={0}
         sx={{
           backgroundColor: theme.palette.mode === 'dark' 
-            ? 'rgba(18, 18, 18, 0.8)'
+            ? 'rgba(15, 23, 42, 0.8)'
             : 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(12px)',
           borderBottom: `1px solid ${theme.palette.divider}`,
           zIndex: theme.zIndex.drawer + 1,
         }}
       >
-        <Container maxWidth="xl">
+        <Container 
+          maxWidth={false}
+          sx={{
+            px: { xs: 2, sm: 3, md: 4 },
+            mx: 'auto',
+            width: '100%',
+            maxWidth: {
+              sm: CONTAINER.sm,
+              md: CONTAINER.md,
+              lg: CONTAINER.lg,
+            },
+          }}
+        >
           <Toolbar 
             sx={{ 
               justifyContent: 'space-between',
-              minHeight: { xs: '64px', sm: '70px' },
-              px: { xs: 2, sm: 3 },
+              minHeight: {
+                xs: `${HEIGHTS.navbar.xs}px`,
+                sm: `${HEIGHTS.navbar.sm}px`,
+              },
+              p: '0 !important',
+              width: '100%',
             }}
           >
             <Typography
@@ -59,11 +77,20 @@ export const Layout = () => {
                 fontWeight: 700,
                 letterSpacing: 1,
                 fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
               }}
             >
               Task Manager
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: { xs: 1, sm: 2 } 
+              }}
+            >
               <NavMenu />
               <ThemeToggle />
             </Box>
@@ -76,24 +103,37 @@ export const Layout = () => {
         sx={{
           flexGrow: 1,
           width: '100%',
-          pt: { xs: '64px', sm: '70px' }, // Altura del AppBar
+          pt: {
+            xs: `${HEIGHTS.navbar.xs}px`,
+            sm: `${HEIGHTS.navbar.sm}px`,
+          },
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
+          position: 'relative',
           overflow: 'hidden',
         }}
       >
-        <Box
+        <Container
+          maxWidth={false}
           sx={{
-            flex: 1,
+            px: { xs: 2, sm: 3, md: 4 },
+            py: { xs: 3, sm: 4, md: 5 },
             width: '100%',
+            maxWidth: {
+              sm: CONTAINER.sm,
+              md: CONTAINER.md,
+              lg: CONTAINER.lg,
+            },
+            mx: 'auto',
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            position: 'relative',
           }}
         >
           <Outlet />
-        </Box>
+        </Container>
       </Box>
 
       <Box
@@ -102,7 +142,9 @@ export const Layout = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
         sx={{
-          py: 2,
+          py: { xs: 2, sm: 3 },
+          width: '100%',
+          mt: 'auto',
           textAlign: 'center',
           borderTop: `1px solid ${theme.palette.divider}`,
           backgroundColor: theme.palette.background.paper,
@@ -110,8 +152,25 @@ export const Layout = () => {
           zIndex: 1,
         }}
       >
-        <Container maxWidth="xl">
-          <Typography variant="body2" color="text.secondary">
+        <Container 
+          maxWidth={false}
+          sx={{
+            px: { xs: 2, sm: 3, md: 4 },
+            maxWidth: {
+              sm: CONTAINER.sm,
+              md: CONTAINER.md,
+              lg: CONTAINER.lg,
+            },
+            mx: 'auto',
+          }}
+        >
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+            sx={{
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            }}
+          >
             © {new Date().getFullYear()} Task Manager. Todos los derechos reservados.
           </Typography>
         </Container>
