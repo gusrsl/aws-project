@@ -68,6 +68,20 @@ custom:
     httpPort: 3000
     lambdaPort: 3002
     noPrependStageInUrl: true
+  cors:
+    origins: 
+      - http://localhost:5173
+      - http://localhost:3000
+      - http://task-manager-frontend-grm.s3-website-us-east-1.amazonaws.com
+      - https://task-manager-frontend-grm.s3-website-us-east-1.amazonaws.com
+    headers:
+      - Content-Type
+      - X-Amz-Date
+      - Authorization
+      - X-Api-Key
+      - X-Amz-Security-Token
+      - X-Amz-User-Agent
+    allowCredentials: true
 
 plugins:
   - serverless-offline

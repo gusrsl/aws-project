@@ -26,7 +26,7 @@ interface RegisterForm {
   confirmPassword: string;
 }
 
-export const RegisterPage = () => {
+const RegisterPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -252,4 +252,6 @@ export const RegisterPage = () => {
       </Container>
     </Box>
   );
-}; 
+};
+
+export default RegisterPage; 

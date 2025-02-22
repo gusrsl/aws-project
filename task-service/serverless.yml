@@ -34,34 +34,84 @@ functions:
       - http:
           path: /tasks
           method: post
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
   getTasks:
     handler: src/tasks.getAll
     events:
       - http:
           path: /tasks
           method: get
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
   updateTask:
     handler: src/tasks.update
     events:
       - http:
           path: /tasks/{taskId}
           method: put
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
   deleteTask:
     handler: src/tasks.delete
     events:
       - http:
           path: /tasks/{taskId}
           method: delete
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
 
 custom:
   serverless-offline:
     httpPort: 3004
     lambdaPort: 3005
     noPrependStageInUrl: true
+  cors:
+    origins: 
+      - http://localhost:5173
+      - http://localhost:3000
+      - http://task-manager-frontend-grm.s3-website-us-east-1.amazonaws.com
+      - https://task-manager-frontend-grm.s3-website-us-east-1.amazonaws.com
+    headers:
+      - Content-Type
+      - X-Amz-Date
+      - Authorization
+      - X-Api-Key
+      - X-Amz-Security-Token
+      - X-Amz-User-Agent
+    allowCredentials: true
 
 plugins:
   - serverless-offline

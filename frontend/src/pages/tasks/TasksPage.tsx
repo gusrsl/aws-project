@@ -23,7 +23,7 @@ import { TaskDialog } from './components/TaskDialog';
 import { TaskFilters } from './components/TaskFilters';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 
-export const TasksPage = () => {
+const TasksPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -271,4 +271,6 @@ export const TasksPage = () => {
       </Container>
     </Box>
   );
-}; 
+};
+
+export default TasksPage; 

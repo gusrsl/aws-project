@@ -9,7 +9,8 @@
 4. [Service Configurations](#service-configurations)
    - [Auth Service](#auth-service)
    - [Task Service](#task-service)
-5. [Microservices Commands and Operations](#microservices-commands-and-operations)
+5. [Communication Flows and Architecture](#communication-flows-and-architecture)
+6. [Microservices Commands and Operations](#microservices-commands-and-operations)
 6. [Lambda Endpoints Guide](#lambda-endpoints-guide)
 7. [Testing Guide](#testing-guide)
 8. [Frontend Documentation](#frontend-documentation)
@@ -112,6 +113,237 @@ functions:
           path: /tasks/{taskId}
           method: delete
 ```
+
+## Communication Flows and Architecture
+
+### API Gateway Endpoints
+
+The application uses two separate API Gateway endpoints for different services:
+
+1. **Authentication Service API:**
+```
+https://ccemnbnre1.execute-api.us-east-1.amazonaws.com/dev
+```
+
+2. **Task Service API:**
+```
+https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev
+```
+
+These URLs are different because each service has its own API Gateway, allowing:
+- Independent scaling
+- Different security levels
+- Independent updates
+- Clear separation of responsibilities
+
+### Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant F as Frontend
+    participant AG as API Gateway (ccemnbnre1)
+    participant L as Lambda Auth
+    participant C as Cognito
+    participant D as DynamoDB
+
+    F->>AG: POST /auth/login
+    AG->>L: Trigger Lambda
+    L->>C: InitiateAuthCommand
+    C-->>L: Cognito Tokens
+    L->>D: Query User Info
+    D-->>L: User Data
+    L-->>AG: Response with Tokens
+    AG-->>F: JWT + User Info
+```
+
+### Task Management Flow
+
+```mermaid
+graph TD
+    A[Frontend React] -->|HTTP Request| B[API Gateway]
+    B -->|Trigger| C[Lambda Function]
+    C -->|Query/Update| D[DynamoDB]
+    C -->|Auth| E[Cognito]
+    C -->|Response| B
+    B -->|HTTP Response| A
+```
+
+### Frontend-Backend Communication
+
+The frontend communicates with the backend services through API Gateway endpoints:
+
+1. **Authentication Endpoints:**
+```typescript
+// Auth Service API Configuration
+const authApi = axios.create({
+  baseURL: 'https://ccemnbnre1.execute-api.us-east-1.amazonaws.com/dev',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  }
+});
+
+// Available Endpoints
+POST /auth/register  // User registration
+POST /auth/login    // User authentication
+```
+
+2. **Task Management Endpoints:**
+```typescript
+// Task Service API Configuration
+const taskApi = axios.create({
+  baseURL: 'https://2g5jn00wzg.execute-api.us-east-1.amazonaws.com/dev',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  }
+});
+
+// Available Endpoints
+GET    /tasks          // Retrieve all tasks
+POST   /tasks          // Create new task
+PUT    /tasks/{taskId} // Update existing task
+DELETE /tasks/{taskId} // Delete task
+```
+
+### Authentication Process
+
+1. **Registration Flow:**
+```javascript
+// Frontend Request
+const response = await authApi.post('/auth/register', {
+    email: 'user@example.com',
+    password: 'password123',
+    name: 'User Name'
+});
+
+// Lambda Processing
+const signUpParams = {
+    ClientId: USER_POOL_CLIENT_ID,
+    Username: email,
+    Password: password,
+    UserAttributes: [
+        { Name: 'email', Value: email },
+        { Name: 'name', Value: name }
+    ]
+};
+
+// Cognito Registration
+const signUpCommand = new SignUpCommand(signUpParams);
+await client.send(signUpCommand);
+
+// User Confirmation
+const confirmCommand = new AdminConfirmSignUpCommand({
+    UserPoolId: USER_POOL_ID,
+    Username: email
+});
+await client.send(confirmCommand);
+```
+
+2. **Login Flow:**
+```javascript
+// Frontend Request
+const response = await authApi.post('/auth/login', {
+    email: 'user@example.com',
+    password: 'password123'
+});
+
+// Lambda Authentication
+const authParams = {
+    AuthFlow: 'USER_PASSWORD_AUTH',
+    ClientId: USER_POOL_CLIENT_ID,
+    AuthParameters: {
+        USERNAME: email,
+        PASSWORD: password
+    }
+};
+
+const authCommand = new InitiateAuthCommand(authParams);
+const authResponse = await client.send(authCommand);
+```
+
+### Token Management
+
+1. **Token Storage:**
+```typescript
+// Store tokens after successful login
+const handleLogin = async (credentials: LoginCredentials) => {
+    const response = await authService.login(credentials);
+    dispatch(setCredentials({
+        user: response.user,
+        token: response.token
+    }));
+};
+```
+
+2. **Request Interceptor:**
+```typescript
+// Add token to all task service requests
+taskApi.interceptors.request.use((config) => {
+    const token = store.getState().auth.token;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+```
+
+### Error Handling
+
+```typescript
+const handleApiError = (error: any) => {
+  // Session expiration
+  if (error.response?.status === 401) {
+    store.dispatch(logout());
+    store.dispatch(showSnackbar({ 
+      message: 'Session expired. Please login again.',
+      severity: 'error'
+    }));
+  }
+  
+  // Other API errors
+  const message = error.response?.data?.error || 'An error occurred';
+  store.dispatch(showSnackbar({ 
+    message,
+    severity: 'error'
+  }));
+};
+```
+
+### Architecture Overview
+
+```mermaid
+graph TD
+    A[Frontend React App] -->|API Requests| B[API Gateway]
+    B -->|Auth Requests| C[Auth Lambda]
+    B -->|Task Requests| D[Task Lambda]
+    C -->|User Management| E[Cognito]
+    C -->|User Data| F[DynamoDB Users]
+    D -->|Task Data| G[DynamoDB Tasks]
+    D -->|Token Validation| E
+```
+
+### Security Considerations
+
+1. **API Gateway:**
+   - CORS configuration
+   - Request throttling
+   - API key validation
+
+2. **Lambda Functions:**
+   - JWT validation
+   - Input sanitization
+   - Error handling
+
+3. **Cognito:**
+   - Password policies
+   - User pool configuration
+   - Token management
+
+4. **DynamoDB:**
+   - Data encryption
+   - Access patterns
+   - Capacity management
 
 ## Microservices Commands and Operations
 

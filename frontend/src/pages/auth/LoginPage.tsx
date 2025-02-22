@@ -24,7 +24,7 @@ interface LoginForm {
   password: string;
 }
 
-export const LoginPage = () => {
+const LoginPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -213,4 +213,6 @@ export const LoginPage = () => {
       </Container>
     </Box>
   );
-}; 
+};
+
+export default LoginPage; 

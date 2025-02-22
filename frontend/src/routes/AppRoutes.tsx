@@ -1,12 +1,16 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { useAppSelector } from '../store/store';
 import { Layout } from '../components/layout/Layout';
 import { AuthLayout } from '../components/layout/AuthLayout';
-import { LoginPage } from '../pages/auth/LoginPage';
-import { RegisterPage } from '../pages/auth/RegisterPage';
-import { TasksPage } from '../pages/tasks/TasksPage';
 import { PageTransition } from '../components/common/PageTransition';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ReactElement } from 'react';
+
+// Lazy load components
+const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/auth/RegisterPage'));
+const TasksPage = lazy(() => import('../pages/tasks/TasksPage'));
 
 const PrivateRoute = ({ children }: { children: ReactElement }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -27,9 +31,11 @@ export const AppRoutes = () => {
           path="login"
           element={
             <PublicRoute>
-              <PageTransition>
-                <LoginPage />
-              </PageTransition>
+              <Suspense fallback={<LoadingSpinner />}>
+                <PageTransition>
+                  <LoginPage />
+                </PageTransition>
+              </Suspense>
             </PublicRoute>
           }
         />
@@ -37,9 +43,11 @@ export const AppRoutes = () => {
           path="register"
           element={
             <PublicRoute>
-              <PageTransition>
-                <RegisterPage />
-              </PageTransition>
+              <Suspense fallback={<LoadingSpinner />}>
+                <PageTransition>
+                  <RegisterPage />
+                </PageTransition>
+              </Suspense>
             </PublicRoute>
           }
         />
@@ -51,9 +59,11 @@ export const AppRoutes = () => {
           path="tasks"
           element={
             <PrivateRoute>
-              <PageTransition>
-                <TasksPage />
-              </PageTransition>
+              <Suspense fallback={<LoadingSpinner />}>
+                <PageTransition>
+                  <TasksPage />
+                </PageTransition>
+              </Suspense>
             </PrivateRoute>
           }
         />
